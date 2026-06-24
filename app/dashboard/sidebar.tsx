@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key } from 'lucide-react';
+import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard, exact: true },
@@ -19,9 +20,10 @@ interface Props {
 
 export function DashboardSidebar({ userName, trialInfo }: Props) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
-  return (
-    <aside className="w-60 bg-white border-r border-gray-200 flex flex-col min-h-screen sticky top-0 h-screen overflow-y-auto">
+  const navContent = (
+    <>
       <div className="px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -47,6 +49,7 @@ export function DashboardSidebar({ userName, trialInfo }: Props) {
             <Link
               key={href}
               href={href}
+              onClick={() => setOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
                   ? 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -72,6 +75,46 @@ export function DashboardSidebar({ userName, trialInfo }: Props) {
           </button>
         </form>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Botão hambúrguer — só no mobile */}
+      <button
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-sm"
+      >
+        <Menu size={20} className="text-gray-700" />
+      </button>
+
+      {/* Overlay escuro no mobile */}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-40 z-40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Sidebar mobile (drawer) */}
+      <aside
+        className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-300 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute top-3 right-3 p-1.5 hover:bg-gray-100 rounded-lg"
+        >
+          <X size={18} className="text-gray-500" />
+        </button>
+        {navContent}
+      </aside>
+
+      {/* Sidebar desktop (fixo à esquerda) */}
+      <aside className="hidden lg:flex w-60 bg-white border-r border-gray-200 flex-col min-h-screen sticky top-0 h-screen overflow-y-auto">
+        {navContent}
+      </aside>
+    </>
   );
 }

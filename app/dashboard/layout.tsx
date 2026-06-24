@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         userName={session.user.name ?? session.user.email ?? 'Usuário'}
         trialInfo={trialInfo}
       />
-      <main className="flex-1 p-8 overflow-auto min-h-screen">
+      <main className="flex-1 p-4 pt-16 lg:p-8 overflow-auto min-h-screen">
         {children}
       </main>
     </div>
