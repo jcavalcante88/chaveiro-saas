@@ -110,7 +110,8 @@ export function RelatoriosClient() {
           {data.topProdutos.length === 0 ? (
             <p className="text-sm text-white/30 text-center py-8">Nenhuma venda no período</p>
           ) : (
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[400px]">
               <thead>
                 <tr className="border-b border-white/10">
                   {['#', 'Produto', 'Qtd vendida', 'Receita'].map((h) => (
@@ -129,6 +130,7 @@ export function RelatoriosClient() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

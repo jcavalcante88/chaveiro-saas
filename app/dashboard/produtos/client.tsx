@@ -76,7 +76,8 @@ export function ProdutosClient() {
       </div>
 
       <div className="glass-card overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead className="border-b border-white/10">
             <tr>
               {['Produto', 'Categoria', 'Custo', 'Venda', 'Margem', 'Estoque', 'Ações'].map((h) => (
@@ -109,6 +110,7 @@ export function ProdutosClient() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {showModal && (

@@ -68,7 +68,8 @@ export function EstoqueClient() {
         <div className="px-5 py-4 border-b border-white/10">
           <h2 className="font-semibold text-white">Estoque atual</h2>
         </div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[500px]">
           <thead className="border-b border-white/10">
             <tr>
               {['Produto', 'Categoria', 'Estoque', 'Mínimo', 'Status'].map((h) => (
@@ -98,13 +99,15 @@ export function EstoqueClient() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="glass-card overflow-hidden">
         <div className="px-5 py-4 border-b border-white/10">
           <h2 className="font-semibold text-white">Histórico de Movimentações</h2>
         </div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px]">
           <thead className="border-b border-white/10">
             <tr>
               {['Data', 'Produto', 'Tipo', 'Qtd', 'Motivo'].map((h) => (
@@ -131,6 +134,7 @@ export function EstoqueClient() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {showModal && (
