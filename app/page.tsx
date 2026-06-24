@@ -1,38 +1,87 @@
 import Link from "next/link";
+import { Key, Package, Boxes, ShoppingCart, BarChart3, Shield } from "lucide-react";
+
+const features = [
+  { icon: Package, title: "Produtos", desc: "Cadastro completo com custo, preço e margem automática" },
+  { icon: Boxes, title: "Estoque", desc: "Controle de entradas e saídas com histórico detalhado" },
+  { icon: ShoppingCart, title: "Vendas", desc: "Carrinho de compras com baixa automática no estoque" },
+  { icon: BarChart3, title: "Relatórios", desc: "Vendas por dia, top produtos e estoque por categoria" },
+  { icon: Shield, title: "Seguro", desc: "Dados isolados por cliente, acesso protegido por login" },
+  { icon: Key, title: "Especializado", desc: "Feito sob medida para chaveiros e serralherias" },
+];
 
 export default function HomePage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        padding: "24px",
-        background: "#FFFBF0",
-        color: "#241B05",
-      }}
-    >
-      <h1 style={{ fontSize: "36px", marginBottom: "8px" }}>Chaveiro Pro</h1>
-      <p style={{ color: "#8C7A45", marginBottom: "28px", maxWidth: "440px" }}>
-        Gestão de estoque e vendas para chaveiros e serralherias. Teste grátis por 15 dias, sem
-        compromisso.
-      </p>
-      <Link
-        href="/login"
-        style={{
-          background: "linear-gradient(160deg, #FFE066, #FFC400, #E2A100)",
-          color: "#241B05",
-          fontWeight: 700,
-          padding: "12px 26px",
-          borderRadius: "10px",
-          textDecoration: "none",
-        }}
-      >
-        Começar teste grátis →
-      </Link>
-    </main>
+    <div className="min-h-screen relative flex flex-col overflow-hidden bg-[#0f0500]">
+      {/* Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
+      </div>
+
+      {/* Nav */}
+      <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <Key size={18} className="text-white" />
+          </div>
+          <span className="text-white font-bold text-lg">Chaveiro Pro</span>
+        </div>
+        <Link
+          href="/login"
+          className="text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors"
+        >
+          Entrar →
+        </Link>
+      </nav>
+
+      {/* Hero */}
+      <section className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
+        <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
+          ✦ 15 dias grátis · Sem cartão de crédito
+        </div>
+
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-white leading-tight mb-6 max-w-2xl">
+          Gestão completa para{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">
+            chaveiros
+          </span>
+        </h1>
+
+        <p className="text-white/50 text-lg max-w-lg mb-10 leading-relaxed">
+          Controle estoque, registre vendas e acompanhe relatórios — tudo num sistema simples, rápido e seguro.
+        </p>
+
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold text-base hover:from-amber-300 hover:to-amber-400 transition-all shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-0.5 duration-200"
+        >
+          Começar grátis
+          <span className="text-lg">→</span>
+        </Link>
+
+        {/* Cards de features */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl w-full mt-20">
+          {features.map(({ icon: Icon, title, desc }, i) => (
+            <div
+              key={title}
+              className="glass-card p-5 text-left hover:-translate-y-1 transition-transform duration-300"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
+                <Icon size={18} className="text-amber-400" />
+              </div>
+              <h3 className="text-white font-semibold mb-1">{title}</h3>
+              <p className="text-white/40 text-sm leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="relative z-10 text-center text-white/20 text-xs py-6">
+        © 2026 Chaveiro Pro · Todos os direitos reservados
+      </footer>
+    </div>
   );
 }
