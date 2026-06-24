@@ -13,32 +13,27 @@ const navItems = [
   { href: '/dashboard/relatorios', label: 'Relatórios', icon: BarChart3 },
 ];
 
-interface Props {
-  userName: string;
-  trialInfo?: string;
-}
+interface Props { userName: string; trialInfo?: string }
 
-export function DashboardSidebar({ userName, trialInfo }: Props) {
+function NavContent({ userName, trialInfo, onClose }: Props & { onClose?: () => void }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  const navContent = (
+  return (
     <>
-      <div className="px-5 py-4 border-b border-gray-100">
+      <div className="px-5 py-4 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/30">
             <Key size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-900 leading-none">Chaveiro Pro</p>
-            <p className="text-xs text-gray-500 mt-0.5">Gestão</p>
+            <p className="text-sm font-bold text-white leading-none">Chaveiro Pro</p>
+            <p className="text-xs text-white/40 mt-0.5">Gestão</p>
           </div>
         </div>
       </div>
 
       {trialInfo && (
-        <div className="mx-3 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-700 font-medium">{trialInfo}</p>
+        <div className="mx-3 mt-3 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-xs text-amber-400 font-medium">{trialInfo}</p>
         </div>
       )}
 
@@ -49,11 +44,11 @@ export function DashboardSidebar({ userName, trialInfo }: Props) {
             <Link
               key={href}
               href={href}
-              onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 active
-                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25 shadow-sm'
+                  : 'text-white/50 hover:bg-white/5 hover:text-white/80'
               }`}
             >
               <Icon size={17} />
@@ -63,12 +58,12 @@ export function DashboardSidebar({ userName, trialInfo }: Props) {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-gray-100">
-        <p className="px-3 text-xs text-gray-500 truncate mb-2">{userName}</p>
+      <div className="px-3 py-4 border-t border-white/10">
+        <p className="px-3 text-xs text-white/30 truncate mb-2">{userName}</p>
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
           >
             <LogOut size={17} />
             Sair
@@ -77,43 +72,35 @@ export function DashboardSidebar({ userName, trialInfo }: Props) {
       </div>
     </>
   );
+}
+
+export function DashboardSidebar({ userName, trialInfo }: Props) {
+  const [open, setOpen] = useState(false);
 
   return (
     <>
-      {/* Botão hambúrguer — só no mobile */}
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-sm"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl shadow-lg"
       >
-        <Menu size={20} className="text-gray-700" />
+        <Menu size={20} className="text-white" />
       </button>
 
-      {/* Overlay escuro no mobile */}
       {open && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-40 z-40"
-          onClick={() => setOpen(false)}
-        />
+        <div className="lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setOpen(false)} />
       )}
 
-      {/* Sidebar mobile (drawer) */}
-      <aside
-        className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-300 ${
-          open ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <button
-          onClick={() => setOpen(false)}
-          className="absolute top-3 right-3 p-1.5 hover:bg-gray-100 rounded-lg"
-        >
-          <X size={18} className="text-gray-500" />
+      {/* Mobile drawer */}
+      <aside className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-[#0f0500]/90 backdrop-blur-xl border-r border-white/10 flex flex-col z-50 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+        <button onClick={() => setOpen(false)} className="absolute top-3 right-3 p-1.5 hover:bg-white/10 rounded-lg">
+          <X size={18} className="text-white/50" />
         </button>
-        {navContent}
+        <NavContent userName={userName} trialInfo={trialInfo} onClose={() => setOpen(false)} />
       </aside>
 
-      {/* Sidebar desktop (fixo à esquerda) */}
-      <aside className="hidden lg:flex w-60 bg-white border-r border-gray-200 flex-col min-h-screen sticky top-0 h-screen overflow-y-auto">
-        {navContent}
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-60 bg-black/20 backdrop-blur-xl border-r border-white/10 flex-col min-h-screen sticky top-0 h-screen overflow-y-auto">
+        <NavContent userName={userName} trialInfo={trialInfo} />
       </aside>
     </>
   );

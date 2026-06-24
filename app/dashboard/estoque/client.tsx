@@ -3,23 +3,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowUpCircle, ArrowDownCircle, SlidersHorizontal, AlertTriangle } from 'lucide-react';
 
-interface Product {
-  id: string;
-  nome: string;
-  categoria: string;
-  estoque: number;
-  minimo: number;
-  custo: number;
-}
-
-interface Movement {
-  id: string;
-  tipo: string;
-  qty: number;
-  motivo: string | null;
-  createdAt: string;
-  product: { nome: string };
-}
+interface Product { id: string; nome: string; categoria: string; estoque: number; minimo: number; custo: number }
+interface Movement { id: string; tipo: string; qty: number; motivo: string | null; createdAt: string; product: { nome: string } }
 
 export function EstoqueClient() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -28,81 +13,50 @@ export function EstoqueClient() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ productId: '', tipo: 'entrada', qty: 1, motivo: '' });
 
-  useEffect(() => {
-    fetchAll();
-  }, []);
+  useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
     setLoading(true);
-    const [pRes, mRes] = await Promise.all([
-      fetch('/api/products'),
-      fetch('/api/stock'),
-    ]);
+    const [pRes, mRes] = await Promise.all([fetch('/api/products'), fetch('/api/stock')]);
     if (pRes.ok) setProducts(await pRes.json());
     if (mRes.ok) setMovements(await mRes.json());
     setLoading(false);
   }
 
   async function handleSave() {
-    if (!form.productId || form.qty <= 0) {
-      alert('Selecione um produto e informe a quantidade.');
-      return;
-    }
-    const res = await fetch('/api/stock', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? 'Erro ao registrar movimentação');
-      return;
-    }
-    setShowModal(false);
-    setForm({ productId: '', tipo: 'entrada', qty: 1, motivo: '' });
+    if (!form.productId || form.qty <= 0) { alert('Selecione um produto e informe a quantidade.'); return; }
+    const res = await fetch('/api/stock', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+    if (!res.ok) { const e = await res.json(); alert(e.error ?? 'Erro ao registrar'); return; }
+    setShowModal(false); setForm({ productId: '', tipo: 'entrada', qty: 1, motivo: '' });
     fetchAll();
   }
 
-  const tipoCor: Record<string, string> = {
-    entrada: 'text-green-600 bg-green-50',
-    saida: 'text-red-600 bg-red-50',
-    ajuste: 'text-blue-600 bg-blue-50',
-  };
+  const tipoCor: Record<string, string> = { entrada: 'text-green-400 bg-green-500/10 border-green-500/20', saida: 'text-red-400 bg-red-500/10 border-red-500/20', ajuste: 'text-blue-400 bg-blue-500/10 border-blue-500/20' };
+  const tipoLabel: Record<string, string> = { entrada: 'Entrada', saida: 'Saída', ajuste: 'Ajuste' };
 
-  const tipoLabel: Record<string, string> = {
-    entrada: 'Entrada',
-    saida: 'Saída',
-    ajuste: 'Ajuste',
-  };
-
-  if (loading) return <div className="p-10 text-center text-gray-500">Carregando...</div>;
-
+  if (loading) return <div className="text-center text-white/40 py-20">Carregando...</div>;
   const baixo = products.filter((p) => p.estoque <= p.minimo);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Estoque</h1>
-          <p className="text-sm text-gray-600">Controle de entradas e saídas de produtos</p>
+          <h1 className="text-3xl font-bold text-white mb-1">Estoque</h1>
+          <p className="text-sm text-white/40">Controle de entradas e saídas</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold px-4 py-2 rounded-lg transition"
-        >
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-amber-500/20">
           <SlidersHorizontal size={18} /> Movimentar
         </button>
       </div>
 
-      {/* Alertas */}
       {baixo.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p className="text-sm font-semibold text-amber-800 flex items-center gap-2 mb-2">
-            <AlertTriangle size={16} /> {baixo.length} produto(s) com estoque abaixo do mínimo
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+          <p className="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-2">
+            <AlertTriangle size={16} /> {baixo.length} produto(s) abaixo do mínimo
           </p>
           <div className="flex flex-wrap gap-2">
             {baixo.map((p) => (
-              <span key={p.id} className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+              <span key={p.id} className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-1 rounded-full">
                 {p.nome}: {p.estoque}/{p.minimo}
               </span>
             ))}
@@ -110,169 +64,92 @@ export function EstoqueClient() {
         </div>
       )}
 
-      {/* Tabela de produtos com estoque */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Estoque atual por produto</h2>
+      <div className="glass-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/10">
+          <h2 className="font-semibold text-white">Estoque atual</h2>
         </div>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="border-b border-white/10">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Produto</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Categoria</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Estoque</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Mínimo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
+              {['Produto', 'Categoria', 'Estoque', 'Mínimo', 'Status'].map((h) => (
+                <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase">{h}</th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {products.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Nenhum produto cadastrado</td>
-              </tr>
-            ) : (
-              products.map((p) => {
-                const low = p.estoque <= p.minimo;
-                return (
-                  <tr key={p.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">{p.nome}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded-full">{p.categoria}</span>
-                    </td>
-                    <td className="px-6 py-4 font-semibold">
-                      <span className={low ? 'text-red-600' : 'text-gray-900'}>{p.estoque}</span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{p.minimo}</td>
-                    <td className="px-6 py-4">
-                      {low ? (
-                        <span className="inline-flex items-center gap-1 text-xs bg-red-50 text-red-700 px-2 py-1 rounded-full font-medium">
-                          <AlertTriangle size={12} /> Baixo
-                        </span>
-                      ) : (
-                        <span className="inline-flex text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full font-medium">OK</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
+              <tr><td colSpan={5} className="px-5 py-10 text-center text-white/30">Nenhum produto cadastrado</td></tr>
+            ) : products.map((p) => {
+              const low = p.estoque <= p.minimo;
+              return (
+                <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                  <td className="px-5 py-4 font-medium text-white">{p.nome}</td>
+                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">{p.categoria}</span></td>
+                  <td className="px-5 py-4 font-semibold"><span className={low ? 'text-red-400' : 'text-white'}>{p.estoque}</span></td>
+                  <td className="px-5 py-4 text-white/50">{p.minimo}</td>
+                  <td className="px-5 py-4">
+                    {low
+                      ? <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium text-red-400 bg-red-500/10 border border-red-500/20"><AlertTriangle size={11} /> Baixo</span>
+                      : <span className="text-xs px-2 py-1 rounded-full font-medium text-green-400 bg-green-500/10 border border-green-500/20">OK</span>
+                    }
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* Histórico de movimentações */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Histórico de Movimentações</h2>
+      <div className="glass-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/10">
+          <h2 className="font-semibold text-white">Histórico de Movimentações</h2>
         </div>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="border-b border-white/10">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Data</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Produto</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Tipo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Qtd</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Motivo</th>
+              {['Data', 'Produto', 'Tipo', 'Qtd', 'Motivo'].map((h) => (
+                <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase">{h}</th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {movements.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Nenhuma movimentação registrada</td>
+              <tr><td colSpan={5} className="px-5 py-10 text-center text-white/30">Nenhuma movimentação registrada</td></tr>
+            ) : movements.map((m) => (
+              <tr key={m.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                <td className="px-5 py-4 text-sm text-white/50">{new Date(m.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                <td className="px-5 py-4 text-sm font-medium text-white">{m.product.nome}</td>
+                <td className="px-5 py-4">
+                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium border ${tipoCor[m.tipo] ?? ''}`}>
+                    {m.tipo === 'entrada' ? <ArrowUpCircle size={11} /> : m.tipo === 'saida' ? <ArrowDownCircle size={11} /> : null}
+                    {tipoLabel[m.tipo] ?? m.tipo}
+                  </span>
+                </td>
+                <td className="px-5 py-4 text-sm text-white/70">{m.qty}</td>
+                <td className="px-5 py-4 text-sm text-white/40">{m.motivo ?? '—'}</td>
               </tr>
-            ) : (
-              movements.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(m.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{m.product.nome}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${tipoCor[m.tipo] ?? ''}`}>
-                      {m.tipo === 'entrada' ? <ArrowUpCircle size={12} /> : m.tipo === 'saida' ? <ArrowDownCircle size={12} /> : null}
-                      {tipoLabel[m.tipo] ?? m.tipo}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{m.qty}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{m.motivo ?? '—'}</td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* Modal de movimentação */}
       {showModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Nova Movimentação</h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="glass-card max-w-md w-full mx-4 p-7" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-white mb-6">Nova Movimentação</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Produto</label>
-                <select
-                  value={form.productId}
-                  onChange={(e) => setForm({ ...form, productId: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione um produto</option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>{p.nome} (estoque: {p.estoque})</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                <select
-                  value={form.tipo}
-                  onChange={(e) => setForm({ ...form, tipo: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="entrada">Entrada</option>
-                  <option value="saida">Saída</option>
-                  <option value="ajuste">Ajuste</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={form.qty}
-                  onChange={(e) => setForm({ ...form, qty: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motivo (opcional)</label>
-                <input
-                  type="text"
-                  value={form.motivo}
-                  onChange={(e) => setForm({ ...form, motivo: e.target.value })}
-                  placeholder="Ex: compra, perda, ajuste de inventário..."
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
+              {[
+                { label: 'Produto', el: <select value={form.productId} onChange={(e) => setForm({ ...form, productId: e.target.value })} className="glass-input w-full" style={{ paddingLeft: '12px' }}><option value="" className="bg-[#1a0a00]">Selecione</option>{products.map((p) => <option key={p.id} value={p.id} className="bg-[#1a0a00]">{p.nome} (est: {p.estoque})</option>)}</select> },
+                { label: 'Tipo', el: <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="glass-input w-full" style={{ paddingLeft: '12px' }}><option value="entrada" className="bg-[#1a0a00]">Entrada</option><option value="saida" className="bg-[#1a0a00]">Saída</option><option value="ajuste" className="bg-[#1a0a00]">Ajuste</option></select> },
+                { label: 'Quantidade', el: <input type="number" min={1} value={form.qty} onChange={(e) => setForm({ ...form, qty: Number(e.target.value) })} className="glass-input w-full" style={{ paddingLeft: '12px' }} /> },
+                { label: 'Motivo (opcional)', el: <input type="text" value={form.motivo} onChange={(e) => setForm({ ...form, motivo: e.target.value })} placeholder="Ex: compra, perda..." className="glass-input w-full" style={{ paddingLeft: '12px' }} /> },
+              ].map(({ label, el }) => (
+                <div key={label}><label className="block text-sm text-white/50 mb-1">{label}</label>{el}</div>
+              ))}
             </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-lg hover:from-amber-500 hover:to-amber-600 transition"
-              >
-                Registrar
-              </button>
+              <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-white/10 rounded-xl text-white/60 hover:bg-white/5 transition text-sm">Cancelar</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-xl hover:from-amber-300 transition text-sm">Registrar</button>
             </div>
           </div>
         </div>

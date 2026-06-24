@@ -1,10 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+
+declare module "next-auth" {
+  interface Session {
+    user: { id: string } & DefaultSession["user"];
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
@@ -25,29 +31,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
         });
-
         if (!user || !user.password) return null;
-
         const valid = await bcrypt.compare(credentials.password as string, user.password);
         if (!valid) return null;
-
         return { id: user.id, email: user.email, name: user.name, image: user.image };
       },
     }),
   ],
-  session: { strategy: "database" },
+  session: { strategy: "jwt" },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?.id) token.id = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      if (token?.id) session.user.id = token.id as string;
+      return session;
+    },
+  },
   events: {
     async createUser({ user }) {
       if (!user.id) return;
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 15);
-      await prisma.subscription.create({
-        data: { userId: user.id, status: "trialing", trialEndsAt },
-      });
+      const existing = await prisma.subscription.findUnique({ where: { userId: user.id } });
+      if (!existing) {
+        await prisma.subscription.create({
+          data: { userId: user.id, status: "trialing", trialEndsAt },
+        });
+      }
     },
   },
   pages: { signIn: "/login" },
