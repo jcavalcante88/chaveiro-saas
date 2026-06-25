@@ -34,8 +34,8 @@ export async function POST(req: Request) {
           data: {
             stripeSubscriptionId: sub.id,
             stripePriceId: sub.items.data[0]?.price.id,
-            status: sub.status, // trialing | active | past_due | canceled...
-            currentPeriodEnd: new Date(sub.current_period_end * 1000),
+            status: sub.status,
+            currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
             trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
           },
         });
