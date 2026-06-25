@@ -70,12 +70,14 @@ function AssinaturaWall({ motivo }: { motivo: string }) {
       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl">🔒</div>
       <h2 className="text-2xl font-bold text-gray-900">{info.titulo}</h2>
       <p className="text-gray-600 max-w-sm">{info.desc}</p>
-      <a
-        href="/api/stripe/checkout"
-        className="mt-2 inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-lg hover:from-amber-500 hover:to-amber-600 transition"
-      >
-        Assinar agora →
-      </a>
+      <form method="POST" action="/api/stripe/checkout">
+        <button
+          type="submit"
+          className="mt-2 inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-lg hover:from-amber-500 hover:to-amber-600 transition"
+        >
+          Assinar agora →
+        </button>
+      </form>
     </div>
   );
 }
