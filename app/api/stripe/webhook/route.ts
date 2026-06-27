@@ -1,65 +1,79 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import type Stripe from "stripe";
+import Stripe from "stripe";
 
-// O Stripe chama essa rota automaticamente quando algo muda na assinatura
-// (fim do trial, cobrança feita, cartão recusado, cancelamento, etc).
-// É isso que mantém o status do cliente sempre correto no seu banco.
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = (await headers()).get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature")!;
 
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(
       body,
-      signature,
+      sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (err) {
-    console.error("Assinatura do webhook inválida:", err);
-    return NextResponse.json({ error: "Assinatura inválida" }, { status: 400 });
+  } catch (err: any) {
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
+
+  const subscription = event.data.object as Stripe.Subscription;
 
   switch (event.type) {
     case "customer.subscription.created":
-    case "customer.subscription.updated": {
-      const sub = event.data.object as Stripe.Subscription;
-      const userId = sub.metadata?.userId;
+    case "customer.subscription.updated":
+      const userId = subscription.metadata.userId;
       if (userId) {
+        const status = subscription.status === "active" ? "active" : subscription.status;
         await prisma.subscription.update({
           where: { userId },
           data: {
-            stripeSubscriptionId: sub.id,
-            stripePriceId: sub.items.data[0]?.price.id,
-            status: sub.status,
-            currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
-            trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
+            stripeSubscriptionId: subscription.id,
+            status,
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
           },
         });
       }
       break;
-    }
 
-    case "customer.subscription.deleted": {
-      const sub = event.data.object as Stripe.Subscription;
-      const userId = sub.metadata?.userId;
-      if (userId) {
+    case "customer.subscription.deleted":
+      const userIdDeleted = subscription.metadata.userId;
+      if (userIdDeleted) {
         await prisma.subscription.update({
-          where: { userId },
+          where: { userId: userIdDeleted },
           data: { status: "canceled" },
         });
       }
       break;
-    }
 
-    case "invoice.payment_failed": {
-      // Cartão recusado após o trial — avise o cliente por e-mail aqui se quiser
-      console.warn("Pagamento falhou para a fatura:", event.data.object);
+    case "invoice.payment_succeeded":
+      const invoice = event.data.object as Stripe.Invoice;
+      if (invoice.subscription) {
+        const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+        const userIdInvoice = sub.metadata.userId;
+        if (userIdInvoice) {
+          await prisma.subscription.update({
+            where: { userId: userIdInvoice },
+            data: { status: "active" },
+          });
+        }
+      }
       break;
-    }
+
+    case "invoice.payment_failed":
+      const invoiceFailed = event.data.object as Stripe.Invoice;
+      if (invoiceFailed.subscription) {
+        const sub = await stripe.subscriptions.retrieve(invoiceFailed.subscription as string);
+        const userIdFailed = sub.metadata.userId;
+        if (userIdFailed) {
+          await prisma.subscription.update({
+            where: { userId: userIdFailed },
+            data: { status: "past_due" },
+          });
+        }
+      }
+      break;
   }
 
   return NextResponse.json({ received: true });

@@ -20,17 +20,11 @@ export async function POST(req: Request) {
 
   const hashed = await bcrypt.hash(password, 12);
 
-  const trialEndsAt = new Date();
-  trialEndsAt.setDate(trialEndsAt.getDate() + 15);
-
   await prisma.user.create({
     data: {
       name: name || email.split("@")[0],
       email,
       password: hashed,
-      subscription: {
-        create: { status: "trialing", trialEndsAt },
-      },
     },
   });
 

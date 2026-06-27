@@ -1,18 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { Package, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Package, DollarSign, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
 
 interface Props {
   totalProdutos: number; valorEstoque: number; vendasHoje: number; vendasMes: number;
   produtosBaixo: { id: string; nome: string; estoque: number; minimo: number }[];
   vendasRecentes: { id: string; total: number; createdAt: string; itens: number }[];
+  statusAssinatura?: { status: string; diasRestantesTrial: number | null };
 }
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtData = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vendasMes, produtosBaixo, vendasRecentes }: Props) {
+export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vendasMes, produtosBaixo, vendasRecentes, statusAssinatura }: Props) {
   const cards = [
     { label: 'Produtos', value: String(totalProdutos), icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
     { label: 'Valor em estoque', value: fmt(valorEstoque), icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
@@ -26,6 +27,28 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
         <h1 className="text-3xl font-bold text-white mb-1">Visão Geral</h1>
         <p className="text-sm text-white/40">Resumo do seu negócio hoje</p>
       </div>
+
+      {statusAssinatura?.status === 'trialing' && statusAssinatura.diasRestantesTrial !== null && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Clock size={20} className="text-amber-400" />
+            <div>
+              <p className="text-white font-medium">
+                {statusAssinatura.diasRestantesTrial} {statusAssinatura.diasRestantesTrial === 1 ? 'dia' : 'dias'} de trial restantes
+              </p>
+              <p className="text-sm text-white/60">Assine para continuar usando após o trial</p>
+            </div>
+          </div>
+          <form method="POST" action="/api/stripe/checkout">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-semibold"
+            >
+              Assinar agora
+            </button>
+          </form>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {cards.map(({ label, value, icon: Icon, color, bg }) => (

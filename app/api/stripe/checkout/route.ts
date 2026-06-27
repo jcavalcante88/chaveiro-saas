@@ -36,14 +36,11 @@ export async function POST() {
     payment_method_types: ["card"],
     line_items: [
       {
-        price: process.env.STRIPE_PRICE_ID!, // preço mensal criado no painel do Stripe
+        price: process.env.STRIPE_PRICE_ID!,
         quantity: 1,
       },
     ],
-    subscription_data: {
-      trial_period_days: 15,
-      metadata: { userId },
-    },
+    metadata: { userId },
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?assinatura=sucesso`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?assinatura=cancelada`,
   });

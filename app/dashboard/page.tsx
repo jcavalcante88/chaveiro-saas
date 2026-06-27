@@ -14,6 +14,7 @@ export default async function DashboardPage() {
   }
 
   const userId = session.user.id;
+  const sub = await prisma.subscription.findUnique({ where: { userId } });
   const agora = new Date();
   const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
   const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
@@ -39,6 +40,10 @@ export default async function DashboardPage() {
   const totalEstoque = produtos.reduce((s, p) => s + p.custo * p.estoque, 0);
   const produtosBaixo = produtos.filter((p) => p.estoque <= p.minimo);
 
+  const diasRestantesTrial = sub?.status === 'trialing' && sub.trialEndsAt
+    ? Math.ceil((sub.trialEndsAt.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
   return (
     <VisaoGeralClient
       totalProdutos={produtos.length}
@@ -52,6 +57,10 @@ export default async function DashboardPage() {
         createdAt: v.createdAt.toISOString(),
         itens: v.items.length,
       }))}
+      statusAssinatura={{
+        status: sub?.status ?? 'sem_assinatura',
+        diasRestantesTrial,
+      }}
     />
   );
 }

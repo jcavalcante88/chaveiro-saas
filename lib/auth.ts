@@ -19,12 +19,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
     }),
     GitHub({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
-      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       credentials: {
@@ -55,12 +53,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   events: {
-    async createUser({ user }) {
-      if (!user.id) return;
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 15);
+    async signIn({ user }) {
+      if (!user?.id) return;
       const existing = await prisma.subscription.findUnique({ where: { userId: user.id } });
       if (!existing) {
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 15);
         await prisma.subscription.create({
           data: { userId: user.id, status: "trialing", trialEndsAt },
         });
