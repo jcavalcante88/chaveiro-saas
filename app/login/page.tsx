@@ -6,13 +6,12 @@ import { Eye, EyeOff, Loader2, Key, Mail, Lock, User } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [forgotSent, setForgotSent] = useState(false);
 
   function set(field: string, val: string) {
     setForm((f) => ({ ...f, [field]: val }));
@@ -25,20 +24,6 @@ export default function LoginPage() {
     setError('');
 
     try {
-      if (mode === 'forgot') {
-        const res = await fetch('/api/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: form.email }),
-        });
-        if (!res.ok) {
-          setError('Erro ao enviar email');
-          return;
-        }
-        setForgotSent(true);
-        return;
-      }
-
       if (mode === 'register') {
         const res = await fetch('/api/register', {
           method: 'POST',
@@ -96,8 +81,7 @@ export default function LoginPage() {
 
         <div className="glass-card p-8">
           {/* Tabs */}
-          {mode !== 'forgot' && (
-            <div className="flex rounded-xl bg-white/5 p-1 mb-7">
+          <div className="flex rounded-xl bg-white/5 p-1 mb-7">
               {(['login', 'register'] as const).map((m) => (
                 <button
                   key={m}
@@ -112,67 +96,8 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-          )}
 
-          {mode === 'forgot' ? (
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-4">Recuperar Senha</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {forgotSent ? (
-                  <div className="text-center">
-                    <p className="text-green-400 text-sm bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2 mb-4">
-                      Email enviado! Verifique sua caixa de entrada para o link de reset.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => { setMode('login'); setForgotSent(false); setError(''); }}
-                      className="text-amber-400 hover:text-amber-300 text-sm font-medium"
-                    >
-                      Voltar ao login
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="glass-input-wrap">
-                      <Mail size={16} className="glass-input-icon" />
-                      <input
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={form.email}
-                        onChange={(e) => set('email', e.target.value)}
-                        required
-                        className="glass-input"
-                      />
-                    </div>
-
-                    {error && (
-                      <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                        {error}
-                      </p>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold text-sm hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/30 disabled:opacity-60 flex items-center justify-center gap-2"
-                    >
-                      {loading && <Loader2 size={16} className="animate-spin" />}
-                      Enviar Link de Reset
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => { setMode('login'); setError(''); }}
-                      className="w-full text-amber-400 hover:text-amber-300 text-sm font-medium"
-                    >
-                      Voltar ao login
-                    </button>
-                  </>
-                )}
-              </form>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'register' && (
                 <div className="glass-input-wrap">
                   <User size={16} className="glass-input-icon" />
@@ -231,30 +156,17 @@ export default function LoginPage() {
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 {mode === 'login' ? 'Entrar' : 'Criar conta grátis'}
               </button>
-
-              {mode === 'login' && (
-                <button
-                  type="button"
-                  onClick={() => { setMode('forgot'); setError(''); }}
-                  className="w-full text-amber-400 hover:text-amber-300 text-sm font-medium"
-                >
-                  Esqueci minha senha
-                </button>
-              )}
             </form>
-          )}
 
-          {mode !== 'forgot' && (
-            <>
-              {/* Divider */}
-              <div className="flex items-center gap-3 my-6">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-white/30 text-xs">ou continue com</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-white/30 text-xs">ou continue com</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
 
-              {/* Social */}
-              <div className="grid grid-cols-2 gap-3">
+          {/* Social */}
+          <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => handleSocial('google')}
                   disabled={!!socialLoading}
@@ -287,8 +199,6 @@ export default function LoginPage() {
                   GitHub
                 </button>
               </div>
-            </>
-          )}
 
           {mode === 'register' && (
             <p className="text-center text-white/30 text-xs mt-6">

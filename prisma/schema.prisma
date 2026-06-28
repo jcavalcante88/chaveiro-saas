@@ -19,8 +19,6 @@ model User {
   emailVerified       DateTime?
   image               String?
   password            String?
-  resetToken          String?   @unique
-  resetTokenExpiry    DateTime?
   theme               String    @default("dark")
   createdAt           DateTime  @default(now())
 
