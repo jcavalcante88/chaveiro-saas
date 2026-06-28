@@ -93,8 +93,8 @@ export function ProdutosClient() {
               const low = p.estoque <= p.minimo;
               return (
                 <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
-                  <td className="px-5 py-4 font-medium text-white">{p.nome}</td>
-                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">{p.categoria}</span></td>
+                  <td className="px-5 py-4 font-medium text-white max-w-xs truncate">{p.nome}</td>
+                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full whitespace-nowrap">{p.categoria}</span></td>
                   <td className="px-5 py-4 text-white/70">{fmt(p.custo)}</td>
                   <td className="px-5 py-4 text-white/70">{fmt(p.preco)}</td>
                   <td className="px-5 py-4 text-white/70">{margem}%</td>

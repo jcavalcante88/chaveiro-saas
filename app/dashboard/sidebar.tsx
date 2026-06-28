@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X, Settings } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard, exact: true },
@@ -11,6 +11,7 @@ const navItems = [
   { href: '/dashboard/estoque', label: 'Estoque', icon: Boxes },
   { href: '/dashboard/vendas', label: 'Vendas', icon: ShoppingCart },
   { href: '/dashboard/relatorios', label: 'Relatórios', icon: BarChart3 },
+  { href: '/dashboard/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
 interface Props { userName: string; trialInfo?: string }
