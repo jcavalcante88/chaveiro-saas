@@ -1,0 +1,64 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a0a00;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="amberGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="150" cy="100" r="120" fill="#f59e0b" opacity="0.15" filter="blur(40px)"/>
+  <circle cx="1050" cy="530" r="150" fill="#d97706" opacity="0.15" filter="blur(40px)"/>
+
+  <!-- Main content -->
+  <g>
+    <!-- Key icon background -->
+    <rect x="100" y="150" width="200" height="330" rx="30" fill="url(#amberGradient)" opacity="0.95"/>
+
+    <!-- Key icon -->
+    <g transform="translate(200, 250)">
+      <!-- Key shaft -->
+      <rect x="-40" y="-15" width="80" height="30" rx="15" fill="white"/>
+      <!-- Key head -->
+      <circle cx="-40" cy="0" r="25" fill="white"/>
+      <!-- Key teeth -->
+      <rect x="35" y="-8" width="15" height="16" fill="white"/>
+      <rect x="55" y="-8" width="15" height="16" fill="white"/>
+    </g>
+  </g>
+
+  <!-- Text content -->
+  <text x="400" y="200" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">
+    Chaveiro Pro
+  </text>
+
+  <text x="400" y="270" font-family="Arial, sans-serif" font-size="36" fill="#f59e0b">
+    Gestão de Estoque e Vendas
+  </text>
+
+  <text x="400" y="380" font-family="Arial, sans-serif" font-size="24" fill="#ffffff" opacity="0.8">
+    • Controle completo de produtos
+  </text>
+
+  <text x="400" y="430" font-family="Arial, sans-serif" font-size="24" fill="#ffffff" opacity="0.8">
+    • Gestão de vendas
+  </text>
+
+  <text x="400" y="480" font-family="Arial, sans-serif" font-size="24" fill="#ffffff" opacity="0.8">
+    • Sistema seguro e confiável
+  </text>
+
+  <!-- CTA -->
+  <rect x="400" y="530" width="700" height="60" rx="15" fill="url(#amberGradient)"/>
+  <text x="750" y="575" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1a0a00" text-anchor="middle">
+    Comece agora - 15 dias grátis 🔑
+  </text>
+</svg>

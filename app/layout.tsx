@@ -5,6 +5,27 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "Chaveiro Pro — Gestão de Estoque e Vendas",
   description: "Sistema de gestão de estoque e vendas para chaveiros e serralherias",
+  openGraph: {
+    title: "Chaveiro Pro",
+    description: "Gerencie seu estoque e vendas com facilidade 🔑",
+    url: process.env.NEXTAUTH_URL || "https://chaveiro-pro.vercel.app",
+    siteName: "Chaveiro Pro",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "Chaveiro Pro - Gestão de Estoque",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Chaveiro Pro",
+    description: "Gerencie seu estoque e vendas com facilidade 🔑",
+    images: ["/og-image.svg"],
+  },
 };
 
 export default function RootLayout({
