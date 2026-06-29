@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     siteName: "Chaveiro Pro",
     images: [
       {
-        url: "/og-image.svg",
+        url: `${process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app"}/og-image.svg`,
         width: 1200,
         height: 630,
         alt: "Chaveiro Pro - Gestão de Estoque",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Chaveiro Pro",
     description: "Gerencie seu estoque e vendas com facilidade 🔑",
-    images: ["/og-image.svg"],
+    images: [`${process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app"}/og-image.svg`],
   },
 };
 
