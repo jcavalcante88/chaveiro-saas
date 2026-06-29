@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     siteName: "Chaveiro Pro",
     images: [
       {
-        url: `${process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app"}/api/og`,
+        url: "https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=630&fit=crop",
         width: 1200,
         height: 630,
         alt: "Chaveiro Pro - Gestão de Estoque",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Chaveiro Pro",
     description: "Gerencie seu estoque e vendas com facilidade 🔑",
-    images: [`${process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app"}/api/og`],
+    images: ["https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=630&fit=crop"],
   },
 };
 
