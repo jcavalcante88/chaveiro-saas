@@ -156,6 +156,14 @@ export default function LoginPage() {
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 {mode === 'login' ? 'Entrar' : 'Criar conta grátis'}
               </button>
+
+              {mode === 'login' && (
+                <div className="text-center">
+                  <Link href="/forgot-password" className="text-amber-400 hover:text-amber-300 text-sm transition-colors">
+                    Esqueceu sua senha?
+                  </Link>
+                </div>
+              )}
             </form>
 
           {/* Divider */}

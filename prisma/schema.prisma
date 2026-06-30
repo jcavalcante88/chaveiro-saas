@@ -20,6 +20,8 @@ model User {
   image               String?
   password            String?
   theme               String    @default("dark")
+  resetToken          String?   @unique
+  resetTokenExpires   DateTime?
   createdAt           DateTime  @default(now())
 
   accounts            Account[]
