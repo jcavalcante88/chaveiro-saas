@@ -2,19 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const baseUrl = process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app";
-
 export const metadata: Metadata = {
   title: "Chaveiro Pro — Gestão de Estoque e Vendas",
   description: "Sistema de gestão de estoque e vendas para chaveiros. 15 dias grátis, sem cartão de crédito. Comece agora!",
   openGraph: {
     title: "Chaveiro Pro — Gestão Completa",
     description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
-    url: baseUrl,
+    url: "https://chaveiro-saas.vercel.app",
     siteName: "Chaveiro Pro",
     images: [
       {
-        url: `${baseUrl}/og-image.png`,
+        url: "/api/og",
         width: 1200,
         height: 630,
         alt: "Chaveiro Pro - Sistema de Gestão de Estoque e Vendas",
@@ -26,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Chaveiro Pro — Gestão Completa",
     description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
-    images: [`${baseUrl}/og-image.png`],
+    images: ["/api/og"],
   },
 };
 
