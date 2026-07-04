@@ -12,7 +12,8 @@ export const transporter = nodemailer.createTransport({
 });
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
-  const resetLink = `${process.env.NEXTAUTH_URL}${resetUrl}`;
+  const baseUrl = process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app";
+  const resetLink = `${baseUrl}${resetUrl}`;
 
   await transporter.sendMail({
     from: `"Chaveiro Pro" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
