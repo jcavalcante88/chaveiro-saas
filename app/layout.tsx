@@ -8,23 +8,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Chaveiro Pro — Gestão Completa",
     description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
-    url: "https://chaveiro-saas.vercel.app",
-    siteName: "Chaveiro Pro",
     images: [
       {
-        url: "/api/og",
+        url: "https://chaveiro-saas.vercel.app/og-image.png",
         width: 1200,
         height: 630,
         alt: "Chaveiro Pro - Sistema de Gestão de Estoque e Vendas",
       },
     ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Chaveiro Pro — Gestão Completa",
-    description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
-    images: ["/api/og"],
   },
 };
 
