@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
     images: [
       {
-        url: "https://chaveiro-saas.vercel.app/og-image.png",
+        url: "https://chaveiro-saas.vercel.app/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Chaveiro Pro - Sistema de Gestão de Estoque e Vendas",
