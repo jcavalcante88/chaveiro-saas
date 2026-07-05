@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1200&h=630&fit=crop",
+        url: "https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=630&fit=crop",
         width: 1200,
         height: 630,
         alt: "Chaveiro Pro - Sistema de Gestão de Estoque e Vendas",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Chaveiro Pro — Gestão Completa",
     description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
-    images: ["https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1200&h=630&fit=crop"],
+    images: ["https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=630&fit=crop"],
   },
 };
 
