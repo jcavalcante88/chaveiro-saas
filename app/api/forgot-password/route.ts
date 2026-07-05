@@ -41,16 +41,25 @@ export async function POST(request: NextRequest) {
     });
 
     // Envia o email
-    await sendPasswordResetEmail(email, `/reset-password?token=${resetToken}`);
+    try {
+      await sendPasswordResetEmail(email, `/reset-password?token=${resetToken}`);
+      console.log(`✓ Email de reset enviado para: ${email}`);
+    } catch (emailError) {
+      console.error("❌ Erro ao enviar email de reset:", emailError);
+      throw emailError;
+    }
 
     return NextResponse.json(
       { message: "Se o email existir, um link de reset será enviado" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Erro ao enviar email de reset:", error);
+    console.error("❌ Erro geral no forgot-password:", error);
     return NextResponse.json(
-      { error: "Erro ao processar solicitação" },
+      {
+        error: "Erro ao processar solicitação",
+        details: error instanceof Error ? error.message : "Erro desconhecido"
+      },
       { status: 500 }
     );
   }
