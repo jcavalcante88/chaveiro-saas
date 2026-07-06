@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X, Settings } from 'lucide-react';
 
 const navItems = [
@@ -61,15 +62,13 @@ function NavContent({ userName, trialInfo, onClose }: Props & { onClose?: () => 
 
       <div className="px-3 py-4 border-t border-white/10">
         <p className="px-3 text-xs text-white/30 truncate mb-2">{userName}</p>
-        <form action="/api/auth/signout" method="post">
-          <button
-            type="submit"
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
-          >
-            <LogOut size={17} />
-            Sair
-          </button>
-        </form>
+        <button
+          onClick={() => signOut({ redirectTo: '/login' })}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          <LogOut size={17} />
+          Sair
+        </button>
       </div>
     </>
   );
