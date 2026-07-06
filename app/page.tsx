@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Key, Package, Boxes, ShoppingCart, BarChart3, Shield } from "lucide-react";
+import { auth } from "@/lib/auth";
 
 const features = [
   { icon: Package, title: "Produtos", desc: "Cadastro completo com custo, preço e margem automática" },
@@ -10,7 +11,11 @@ const features = [
   { icon: Key, title: "Especializado", desc: "Feito sob medida para chaveiros e serralherias" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Se o usuário já estiver logado, os botões levam direto ao dashboard
+  const session = await auth();
+  const dest = session?.user?.id ? "/dashboard" : "/login";
+
   return (
     <div className="min-h-screen relative flex flex-col overflow-hidden bg-[#0f0500]">
       {/* Blobs */}
@@ -29,7 +34,7 @@ export default function HomePage() {
           <span className="text-white font-bold text-lg">Chaveiro Pro</span>
         </div>
         <Link
-          href="/login"
+          href={dest}
           className="text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors"
         >
           Entrar →
@@ -54,10 +59,10 @@ export default function HomePage() {
         </p>
 
         <Link
-          href="/login"
+          href={dest}
           className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold text-base hover:from-amber-300 hover:to-amber-400 transition-all shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-0.5 duration-200"
         >
-          Começar grátis
+          {session?.user?.id ? "Ir para o painel" : "Começar grátis"}
           <span className="text-lg">→</span>
         </Link>
 
