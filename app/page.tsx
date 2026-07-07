@@ -44,7 +44,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
         <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
-          ✦ 15 dias grátis · Sem cartão de crédito
+          ✦ 2 meses grátis · Sem cartão de crédito
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white leading-tight mb-6 max-w-2xl">

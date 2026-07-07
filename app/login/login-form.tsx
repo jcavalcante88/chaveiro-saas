@@ -210,7 +210,7 @@ export default function LoginForm() {
 
           {mode === 'register' && (
             <p className="text-center text-white/30 text-xs mt-6">
-              15 dias grátis · Sem cartão de crédito
+              2 meses grátis · Sem cartão de crédito
             </p>
           )}
         </div>

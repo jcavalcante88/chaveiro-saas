@@ -4,10 +4,10 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Chaveiro Pro — Gestão de Estoque e Vendas",
-  description: "Sistema de gestão de estoque e vendas para chaveiros. 15 dias grátis, sem cartão de crédito. Comece agora!",
+  description: "Sistema de gestão de estoque e vendas para chaveiros. 2 meses grátis, sem cartão de crédito. Comece agora!",
   openGraph: {
     title: "Chaveiro Pro — Gestão Completa",
-    description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
+    description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 2 meses grátis!",
     images: [
       {
         url: "https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=630&fit=crop",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Chaveiro Pro — Gestão Completa",
-    description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 15 dias grátis!",
+    description: "Sistema profissional para chaveiros gerenciar estoque e vendas. 2 meses grátis!",
     images: ["https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=630&fit=crop"],
   },
 };

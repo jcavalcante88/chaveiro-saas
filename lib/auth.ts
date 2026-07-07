@@ -58,7 +58,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existing = await prisma.subscription.findUnique({ where: { userId: user.id } });
       if (!existing) {
         const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 15);
+        trialEndsAt.setDate(trialEndsAt.getDate() + 60);
         await prisma.subscription.create({
           data: { userId: user.id, status: "trialing", trialEndsAt },
         });
