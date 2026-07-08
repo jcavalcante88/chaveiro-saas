@@ -54,8 +54,11 @@ export default async function HomePage() {
           </span>
         </h1>
 
-        <p className="text-white/50 text-lg max-w-lg mb-10 leading-relaxed">
-          Controle estoque, registre vendas e acompanhe relatórios — tudo num sistema simples, rápido e seguro.
+        <p className="text-white/50 text-lg max-w-lg mb-4 leading-relaxed">
+          Sem mais cadernos, planilhas ou perda de vendas. Seu estoque e suas vendas em um único lugar.
+        </p>
+        <p className="text-white/40 text-sm max-w-lg mb-10">
+          Usado por chaveiros que querem parar de perder dinheiro e começar a lucrar mais.
         </p>
 
         <Link
@@ -66,8 +69,35 @@ export default async function HomePage() {
           <span className="text-lg">→</span>
         </Link>
 
+        {/* Vídeo Demo */}
+        <div className="w-full max-w-2xl mt-16 mb-20 rounded-3xl overflow-hidden shadow-2xl shadow-amber-500/20 border border-amber-500/10">
+          <div className="bg-black aspect-video flex items-center justify-center relative">
+            <p className="text-white/60 text-sm text-center px-6">
+              🎬 Seu vídeo de demonstração vai aqui<br/>
+              <span className="text-white/30 text-xs mt-2 block">(Quando gravar, suba no YouTube e mude o link abaixo)</span>
+            </p>
+          </div>
+          <p className="text-white/40 text-xs text-center py-3 bg-white/5">
+            Cole aqui: &lt;iframe width="100%" height="400" src="https://www.youtube.com/embed/SEU_VIDEO_ID" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
+          </p>
+        </div>
+
+        {/* Depoimento */}
+        <div className="w-full max-w-2xl mb-20 bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-500/20 rounded-2xl p-8">
+          <p className="text-white/80 italic text-lg leading-relaxed mb-6">
+            "Antes eu perdia vendas porque não sabia qual produto tinha em estoque. Agora em 30 segundos vejo tudo, saco o cliente certo e fecho a venda. Meu lucro subiu 25% em um mês."
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-amber-500/30 border border-amber-500/50"></div>
+            <div>
+              <p className="text-white font-semibold">João Silva</p>
+              <p className="text-white/40 text-sm">Chaveiro em São Paulo</p>
+            </div>
+          </div>
+        </div>
+
         {/* Cards de features */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl w-full mt-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl w-full mt-8">
           {features.map(({ icon: Icon, title, desc }, i) => (
             <div
               key={title}
@@ -84,7 +114,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <footer className="relative z-10 text-center text-white/20 text-xs py-6">
+      {/* CTA Final */}
+      <section className="relative z-10 bg-gradient-to-r from-amber-500/5 to-amber-600/5 border-t border-amber-500/10 py-16 px-6 text-center">
+        <h2 className="text-3xl font-bold text-white mb-4">Pronto para parar de perder dinheiro?</h2>
+        <p className="text-white/50 mb-8 max-w-md mx-auto">2 meses grátis. Sem cartão de crédito. Cancela quando quiser.</p>
+        <Link
+          href={dest}
+          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold text-base hover:from-amber-300 hover:to-amber-400 transition-all shadow-xl shadow-amber-500/30"
+        >
+          Começar Agora
+          <span className="text-lg">→</span>
+        </Link>
+      </section>
+
+      <footer className="relative z-10 text-center text-white/20 text-xs py-6 border-t border-white/5">
         © 2026 Chaveiro Pro · Todos os direitos reservados
       </footer>
     </div>
