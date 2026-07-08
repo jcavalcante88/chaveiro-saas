@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { passwordResetLimiter } from "@/lib/ratelimit";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: máximo 3 tentativas por 30 minutos por IP
+    const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
+    const { success } = await passwordResetLimiter.limit(ip);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Muitas tentativas de reset. Tente novamente em 30 minutos." },
+        { status: 429 }
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email) {
