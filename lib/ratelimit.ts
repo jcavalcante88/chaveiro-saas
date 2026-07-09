@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 // Mock para desenvolvimento (quando Upstash não está configurado)
 class MockRatelimit {
   async limit(_key: string) {
+    console.warn("⚠️ Rate limiting DESATIVADO (usando mock). Configure UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN");
     return { success: true };
   }
 }
@@ -15,9 +16,16 @@ let passwordResetLimiterInstance: Ratelimit | MockRatelimit | null = null;
 function initLoginLimiter() {
   if (loginLimiterInstance) return loginLimiterInstance;
 
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  const hasUrl = !!process.env.UPSTASH_REDIS_REST_URL;
+  const hasToken = !!process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!hasUrl || !hasToken) {
+    console.warn("❌ Upstash não configurado. Rate limiting DESATIVADO!");
     loginLimiterInstance = new MockRatelimit();
-  } else {
+    return loginLimiterInstance;
+  }
+
+  try {
     const redis = new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL,
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -29,6 +37,11 @@ function initLoginLimiter() {
       analytics: true,
       prefix: "ratelimit:login",
     });
+
+    console.log("✅ Rate limiting ATIVADO - Login");
+  } catch (error) {
+    console.error("❌ Erro ao conectar Upstash (login):", error);
+    loginLimiterInstance = new MockRatelimit();
   }
 
   return loginLimiterInstance;
@@ -37,9 +50,16 @@ function initLoginLimiter() {
 function initRegisterLimiter() {
   if (registerLimiterInstance) return registerLimiterInstance;
 
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  const hasUrl = !!process.env.UPSTASH_REDIS_REST_URL;
+  const hasToken = !!process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!hasUrl || !hasToken) {
+    console.warn("❌ Upstash não configurado. Rate limiting DESATIVADO!");
     registerLimiterInstance = new MockRatelimit();
-  } else {
+    return registerLimiterInstance;
+  }
+
+  try {
     const redis = new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL,
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -51,6 +71,11 @@ function initRegisterLimiter() {
       analytics: true,
       prefix: "ratelimit:register",
     });
+
+    console.log("✅ Rate limiting ATIVADO - Register");
+  } catch (error) {
+    console.error("❌ Erro ao conectar Upstash (register):", error);
+    registerLimiterInstance = new MockRatelimit();
   }
 
   return registerLimiterInstance;
@@ -59,9 +84,16 @@ function initRegisterLimiter() {
 function initPasswordResetLimiter() {
   if (passwordResetLimiterInstance) return passwordResetLimiterInstance;
 
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  const hasUrl = !!process.env.UPSTASH_REDIS_REST_URL;
+  const hasToken = !!process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!hasUrl || !hasToken) {
+    console.warn("❌ Upstash não configurado. Rate limiting DESATIVADO!");
     passwordResetLimiterInstance = new MockRatelimit();
-  } else {
+    return passwordResetLimiterInstance;
+  }
+
+  try {
     const redis = new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL,
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -73,6 +105,11 @@ function initPasswordResetLimiter() {
       analytics: true,
       prefix: "ratelimit:password-reset",
     });
+
+    console.log("✅ Rate limiting ATIVADO - Password Reset");
+  } catch (error) {
+    console.error("❌ Erro ao conectar Upstash (password reset):", error);
+    passwordResetLimiterInstance = new MockRatelimit();
   }
 
   return passwordResetLimiterInstance;
