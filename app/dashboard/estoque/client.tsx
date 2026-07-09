@@ -6,6 +6,8 @@ import { ArrowUpCircle, ArrowDownCircle, SlidersHorizontal, AlertTriangle } from
 interface Product { id: string; nome: string; categoria: string; estoque: number; minimo: number; custo: number }
 interface Movement { id: string; tipo: string; qty: number; motivo: string | null; createdAt: string; product: { nome: string } }
 
+const fmt = (v: number) => `R$ ${v.toFixed(2)}`;
+
 export function EstoqueClient() {
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
@@ -64,7 +66,8 @@ export function EstoqueClient() {
         </div>
       )}
 
-      <div className="glass-card overflow-hidden">
+      {/* Desktop: Tabela */}
+      <div className="glass-card overflow-hidden hidden lg:block">
         <div className="px-5 py-4 border-b border-white/10">
           <h2 className="font-semibold text-white">Estoque atual</h2>
         </div>
@@ -101,6 +104,48 @@ export function EstoqueClient() {
         </table>
         </div>
       </div>
+
+      {/* Mobile: Cards */}
+      {products.length === 0 ? (
+        <div className="lg:hidden text-center text-white/30 py-10">Nenhum produto cadastrado</div>
+      ) : (
+        <div className="lg:hidden space-y-3">
+          {products.map((p) => {
+            const low = p.estoque <= p.minimo;
+            return (
+              <div key={p.id} className="glass-card p-4 space-y-3">
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate">{p.nome}</p>
+                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
+                  </div>
+                  <div>
+                    {low
+                      ? <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium text-red-400 bg-red-500/10 border border-red-500/20"><AlertTriangle size={12} /> Baixo</span>
+                      : <span className="text-xs px-2 py-1 rounded-full font-medium text-green-400 bg-green-500/10 border border-green-500/20">OK</span>
+                    }
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Atual</p>
+                    <p className={`text-sm font-semibold ${low ? 'text-red-400' : 'text-white'}`}>{p.estoque}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Mínimo</p>
+                    <p className="text-sm font-medium text-white/70">{p.minimo}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Custo Un.</p>
+                    <p className="text-sm font-medium text-white">{fmt(p.custo)}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div className="glass-card overflow-hidden">
         <div className="px-5 py-4 border-b border-white/10">

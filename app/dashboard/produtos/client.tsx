@@ -75,7 +75,8 @@ export function ProdutosClient() {
         </select>
       </div>
 
-      <div className="glass-card overflow-hidden">
+      {/* Desktop: Tabela */}
+      <div className="glass-card overflow-hidden hidden lg:block">
         <div className="overflow-x-auto">
         <table className="w-full min-w-[640px]">
           <thead className="border-b border-white/10">
@@ -112,6 +113,51 @@ export function ProdutosClient() {
         </table>
         </div>
       </div>
+
+      {/* Mobile: Cards */}
+      {filtered.length === 0 ? (
+        <div className="lg:hidden text-center text-white/30 py-10">Nenhum produto encontrado</div>
+      ) : (
+        <div className="lg:hidden space-y-3">
+          {filtered.map((p) => {
+            const margem = p.preco > 0 ? Math.round(((p.preco - p.custo) / p.preco) * 100) : 0;
+            const low = p.estoque <= p.minimo;
+            return (
+              <div key={p.id} className="glass-card p-4 space-y-3">
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate">{p.nome}</p>
+                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={16} className="text-blue-400" /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-white/10 rounded-lg transition"><Trash2 size={16} className="text-red-400" /></button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Custo</p>
+                    <p className="text-sm font-medium text-white">{fmt(p.custo)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Venda</p>
+                    <p className="text-sm font-medium text-white">{fmt(p.preco)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Margem</p>
+                    <p className="text-sm font-medium text-amber-400">{margem}%</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Estoque</p>
+                    <p className={`text-sm font-medium ${low ? 'text-red-400' : 'text-white'}`}>{p.estoque} {low && '⚠️'}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
