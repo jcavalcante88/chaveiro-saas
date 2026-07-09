@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X, Settings, Lightbulb } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard, exact: true },
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/dashboard/vendas', label: 'Vendas', icon: ShoppingCart },
   { href: '/dashboard/relatorios', label: 'Relatórios', icon: BarChart3 },
   { href: '/dashboard/configuracoes', label: 'Configurações', icon: Settings },
+  { href: '/onboarding', label: 'Tutorial', icon: Lightbulb, special: true },
 ];
 
 interface Props { userName: string; trialInfo?: string }
@@ -40,7 +41,7 @@ function NavContent({ userName, trialInfo, onClose }: Props & { onClose?: () => 
       )}
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon, exact }) => {
+        {navItems.map(({ href, label, icon: Icon, exact, special }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
             <Link
@@ -48,7 +49,9 @@ function NavContent({ userName, trialInfo, onClose }: Props & { onClose?: () => 
               href={href}
               onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                active
+                special
+                  ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-300 border border-amber-500/30 hover:from-amber-500/30 hover:to-amber-600/30'
+                  : active
                   ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25 shadow-sm'
                   : 'text-white/50 hover:bg-white/5 hover:text-white/80'
               }`}
