@@ -71,30 +71,18 @@ export default async function HomePage() {
 
         {/* Vídeo Demo */}
         <div className="w-full max-w-2xl mt-16 mb-20 rounded-3xl overflow-hidden shadow-2xl shadow-amber-500/20 border border-amber-500/10">
-          <div className="bg-black aspect-video flex items-center justify-center relative">
-            <p className="text-white/60 text-sm text-center px-6">
-              🎬 Seu vídeo de demonstração vai aqui<br/>
-              <span className="text-white/30 text-xs mt-2 block">(Quando gravar, suba no YouTube e mude o link abaixo)</span>
-            </p>
-          </div>
-          <p className="text-white/40 text-xs text-center py-3 bg-white/5">
-            Cole aqui: &lt;iframe width="100%" height="400" src="https://www.youtube.com/embed/SEU_VIDEO_ID" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
-          </p>
+          <iframe
+            width="100%"
+            height="400"
+            src="https://www.youtube.com/embed/O_WJdzyA7HM"
+            title="Demo Chaveiro Pro"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="rounded-3xl"
+          />
         </div>
 
-        {/* Depoimento */}
-        <div className="w-full max-w-2xl mb-20 bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-500/20 rounded-2xl p-8">
-          <p className="text-white/80 italic text-lg leading-relaxed mb-6">
-            "Antes eu perdia vendas porque não sabia qual produto tinha em estoque. Agora em 30 segundos vejo tudo, saco o cliente certo e fecho a venda. Meu lucro subiu 25% em um mês."
-          </p>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-amber-500/30 border border-amber-500/50"></div>
-            <div>
-              <p className="text-white font-semibold">João Silva</p>
-              <p className="text-white/40 text-sm">Chaveiro em São Paulo</p>
-            </div>
-          </div>
-        </div>
 
         {/* Cards de features */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl w-full mt-8">
