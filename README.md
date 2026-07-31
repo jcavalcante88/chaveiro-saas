@@ -6,9 +6,7 @@ Sistema **SaaS multi-cliente** de gestão de estoque e vendas, feito sob medida 
 
 🔗 **Demo ao vivo:** https://chaveiro-saas.vercel.app
 
-<!-- 📸 DICA: coloque aqui um print do painel. Salve a imagem em /public e troque a linha abaixo:
-![Painel do Chaveiro Pro](public/screenshot-dashboard.png)
--->
+![Chaveiro Pro — página inicial](public/screenshot.png)
 
 ---
 
