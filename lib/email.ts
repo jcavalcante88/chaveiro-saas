@@ -18,10 +18,26 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   const baseUrl = process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app";
   const resetLink = `${baseUrl}${resetUrl}`;
 
-  await transporter.sendMail({
+  return await transporter.sendMail({
     from: `"Chaveiro Pro" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    replyTo: process.env.SMTP_REPLY_TO || undefined,
     to: email,
-    subject: "🔑 Resetar sua senha - Chaveiro Pro",
+    subject: "Resetar sua senha - Chaveiro Pro",
+    // Versão em texto puro: e-mail só-HTML é sinal clássico de spam para
+    // Yahoo e Gmail. Manter as duas versões sincronizadas.
+    text: [
+      "Resetar sua senha - Chaveiro Pro",
+      "",
+      "Você solicitou para resetar sua senha no Chaveiro Pro.",
+      "Abra o link abaixo para criar uma nova senha:",
+      "",
+      resetLink,
+      "",
+      "Este link expira em 1 hora por segurança.",
+      "",
+      "Se você não solicitou essa alteração, ignore este email.",
+      "Sua conta não será alterada.",
+    ].join("\n"),
     html: `
       <!DOCTYPE html>
       <html>

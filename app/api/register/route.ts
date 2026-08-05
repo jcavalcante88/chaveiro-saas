@@ -24,7 +24,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Senha deve ter ao menos 6 caracteres" }, { status: 400 });
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  // Normaliza para não criar dois usuários com o mesmo email em caixas diferentes.
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existing = await prisma.user.findFirst({
+    where: { email: { equals: normalizedEmail, mode: "insensitive" } },
+  });
   if (existing) {
     return NextResponse.json({ error: "Este email já está cadastrado" }, { status: 409 });
   }
@@ -33,8 +38,8 @@ export async function POST(req: Request) {
 
   await prisma.user.create({
     data: {
-      name: name || email.split("@")[0],
-      email,
+      name: name || normalizedEmail.split("@")[0],
+      email: normalizedEmail,
       password: hashed,
     },
   });

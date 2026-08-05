@@ -32,8 +32,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Busca sem diferenciar maiúsculas/minúsculas: quem cadastrou como
+    // "Fulano@Yahoo.com" precisa conseguir resetar digitando "fulano@yahoo.com".
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email.trim(), mode: "insensitive" } },
     });
 
     // Não revelamos se o email existe ou não (segurança)
@@ -60,8 +62,17 @@ export async function POST(request: NextRequest) {
 
     // Envia o email
     try {
-      await sendPasswordResetEmail(email, `/reset-password?token=${resetToken}`);
-      console.log(`✓ Email de reset enviado para: ${email}`);
+      const info = await sendPasswordResetEmail(
+        user.email!,
+        `/reset-password?token=${resetToken}`
+      );
+      // A Brevo aceitar não garante entrega, mas a resposta dela é o único
+      // rastro que temos sem abrir o painel. Guarde o messageId para suporte.
+      console.log(
+        `✓ Email de reset para ${user.email} | id=${info.messageId} | ` +
+          `aceitos=${info.accepted?.length ?? 0} recusados=${info.rejected?.length ?? 0} | ` +
+          `resposta=${info.response}`
+      );
     } catch (emailError) {
       console.error("❌ Erro ao enviar email de reset:", emailError);
       throw emailError;
