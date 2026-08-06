@@ -69,18 +69,20 @@ export default async function HomePage() {
           <span className="text-lg">→</span>
         </Link>
 
-        {/* Vídeo Demo */}
-        <div className="w-full max-w-2xl mt-16 mb-20 rounded-3xl overflow-hidden shadow-2xl shadow-amber-500/20 border border-amber-500/10">
-          <iframe
-            width="100%"
-            height="400"
-            src="https://www.youtube.com/embed/O_WJdzyA7HM"
-            title="Demo Chaveiro Pro"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            className="rounded-3xl"
-          />
+        {/* Vídeo Demo — gravação de tela vertical, por isso a moldura estreita */}
+        <div className="w-full max-w-[320px] mt-16 mb-20 rounded-3xl overflow-hidden shadow-2xl shadow-amber-500/20 border border-amber-500/10">
+          <video
+            controls
+            playsInline
+            // Só baixa o vídeo inteiro quando o visitante der play; até lá
+            // mostra o poster. Evita gastar banda com quem nem assiste.
+            preload="metadata"
+            poster="/demo-poster.jpg"
+            className="w-full h-auto rounded-3xl bg-black"
+          >
+            <source src="/demo.mp4" type="video/mp4" />
+            Seu navegador não suporta vídeo.
+          </video>
         </div>
 
 
