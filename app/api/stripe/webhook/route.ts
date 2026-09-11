@@ -3,77 +3,204 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
+// A verificação de assinatura do Stripe depende do corpo cru e do crypto do
+// Node; fixamos o runtime para o deploy nunca inferir edge por engano.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// O Stripe não copia a metadata da sessão de checkout para a assinatura.
+// Por isso resolvemos o usuário por dois caminhos: a metadata (quando existe)
+// e, como garantia, o stripeCustomerId que já gravamos ao criar o cliente.
+async function resolverUserId(
+  metadataUserId: string | undefined,
+  customer: string | Stripe.Customer | Stripe.DeletedCustomer | null
+): Promise<string | null> {
+  if (metadataUserId) return metadataUserId;
+
+  const customerId = typeof customer === "string" ? customer : customer?.id;
+  if (!customerId) return null;
+
+  const registro = await prisma.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+    select: { userId: true },
+  });
+  return registro?.userId ?? null;
+}
+
+// Extrai um id de um campo que pode vir como string ou objeto expandido.
+function idDe(valor: unknown): string | null {
+  if (typeof valor === "string") return valor;
+  if (valor && typeof valor === "object") {
+    const id = (valor as { id?: unknown }).id;
+    if (typeof id === "string") return id;
+  }
+  return null;
+}
+
+// Versões recentes da API movem current_period_end para o item da assinatura.
+function fimDoPeriodo(sub: Stripe.Subscription): Date | undefined {
+  const raiz = (sub as unknown as { current_period_end?: number }).current_period_end;
+  const item = (sub.items?.data?.[0] as unknown as { current_period_end?: number } | undefined)
+    ?.current_period_end;
+  const ts = raiz ?? item;
+  return ts ? new Date(ts * 1000) : undefined;
+}
+
+// A partir da versão 2025-03-31 da API o campo invoice.subscription deixou de
+// existir: a referência passou para invoice.parent.subscription_details, e nas
+// linhas para parent.subscription_item_details. O endpoint entrega o payload na
+// versão configurada nele — que não é a do nosso SDK —, então aceitamos as duas
+// formas. Sem isto o evento chega, não encontra a assinatura e é ignorado em
+// silêncio, deixando renovações sem registro.
+function assinaturaDaFatura(fatura: Stripe.Invoice): string | null {
+  const f = fatura as unknown as {
+    subscription?: unknown;
+    parent?: { subscription_details?: { subscription?: unknown } | null } | null;
+    lines?: { data?: Array<{ parent?: { subscription_item_details?: { subscription?: unknown } | null } | null }> };
+  };
+
+  const candidatos: unknown[] = [
+    f.subscription,
+    f.parent?.subscription_details?.subscription,
+    ...(f.lines?.data ?? []).map((linha) => linha?.parent?.subscription_item_details?.subscription),
+  ];
+
+  for (const candidato of candidatos) {
+    const id = idDe(candidato);
+    if (id) return id;
+  }
+  return null;
+}
+
+// Erros que reenviar não resolve: o evento veio de outro ambiente (teste x live),
+// o recurso não existe mais, ou o registro colide com outro. Devolver 500 nesses
+// casos faz o Stripe repetir o mesmo evento até desativar o endpoint.
+function ehErroPermanente(err: any): boolean {
+  if (err?.type === "StripeInvalidRequestError") return true;
+  // P2025 registro ausente, P2002 unicidade, P2003 chave estrangeira.
+  if (err?.code === "P2025" || err?.code === "P2002" || err?.code === "P2003") return true;
+  return false;
+}
+
+async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: string) {
+  const userId = await resolverUserId(metadataUserId ?? sub.metadata?.userId, sub.customer);
+  if (!userId) {
+    console.error("Webhook: nao foi possivel identificar o usuario da assinatura", sub.id);
+    return;
+  }
+
+  // A mesma conta Stripe atende mais de um produto, e cada endpoint recebe os
+  // eventos da conta inteira — inclusive os dos outros apps. Se o usuário não
+  // existe neste banco, a assinatura é de outro produto: ignorar. Sem isto o
+  // upsert estoura chave estrangeira, devolve 500 e o Stripe reenvia até
+  // desativar o endpoint.
+  const existe = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!existe) {
+    console.warn("Webhook: assinatura de usuario de outro app, ignorada", sub.id, userId);
+    return;
+  }
+
+  const customerId = idDe(sub.customer);
+  const dados = {
+    stripeSubscriptionId: sub.id,
+    stripePriceId: sub.items?.data?.[0]?.price?.id,
+    status: sub.status,
+    currentPeriodEnd: fimDoPeriodo(sub),
+  };
+
+  // upsert em vez de update: se a linha ainda não existe (conta criada antes do
+  // trial, base recriada), o update lançava P2025 e o webhook devolvia 500.
+  await prisma.subscription.upsert({
+    where: { userId },
+    update: dados,
+    create: { userId, stripeCustomerId: customerId, ...dados },
+  });
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+
+  const segredo = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!segredo) {
+    console.error("Webhook: STRIPE_WEBHOOK_SECRET nao configurado neste ambiente");
+    return NextResponse.json({ error: "Webhook nao configurado" }, { status: 500 });
+  }
+  if (!sig) {
+    return NextResponse.json({ error: "Assinatura ausente" }, { status: 400 });
+  }
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, segredo);
   } catch (err: any) {
+    console.error("Webhook: assinatura invalida.", err?.message);
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  const subscription = event.data.object as Stripe.Subscription;
-
-  switch (event.type) {
-    case "customer.subscription.created":
-    case "customer.subscription.updated":
-      const userId = subscription.metadata.userId;
-      if (userId) {
-        const status = subscription.status === "active" ? "active" : subscription.status;
-        await prisma.subscription.update({
-          where: { userId },
-          data: {
-            stripeSubscriptionId: subscription.id,
-            status,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-          },
-        });
+  try {
+    switch (event.type) {
+      // Disparado assim que o cliente conclui o pagamento. É aqui que a
+      // metadata com o userId realmente existe.
+      case "checkout.session.completed": {
+        const sessao = event.data.object as Stripe.Checkout.Session;
+        const subId = idDe(sessao.subscription);
+        if (subId) {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          await salvarAssinatura(sub, sessao.metadata?.userId);
+        }
+        break;
       }
-      break;
 
-    case "customer.subscription.deleted":
-      const userIdDeleted = subscription.metadata.userId;
-      if (userIdDeleted) {
-        await prisma.subscription.update({
-          where: { userId: userIdDeleted },
-          data: { status: "canceled" },
-        });
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        await salvarAssinatura(event.data.object as Stripe.Subscription);
+        break;
       }
-      break;
 
-    case "invoice.payment_succeeded":
-      const invoice = event.data.object as Stripe.Invoice;
-      if (invoice.subscription) {
-        const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
-        const userIdInvoice = sub.metadata.userId;
-        if (userIdInvoice) {
-          await prisma.subscription.update({
-            where: { userId: userIdInvoice },
-            data: { status: "active" },
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        const userId = await resolverUserId(sub.metadata?.userId, sub.customer);
+        if (userId) {
+          // updateMany não estoura quando o registro não existe.
+          await prisma.subscription.updateMany({
+            where: { userId },
+            data: { status: "canceled" },
           });
         }
+        break;
       }
-      break;
 
-    case "invoice.payment_failed":
-      const invoiceFailed = event.data.object as Stripe.Invoice;
-      if (invoiceFailed.subscription) {
-        const sub = await stripe.subscriptions.retrieve(invoiceFailed.subscription as string);
-        const userIdFailed = sub.metadata.userId;
-        if (userIdFailed) {
-          await prisma.subscription.update({
-            where: { userId: userIdFailed },
-            data: { status: "past_due" },
+      case "invoice.payment_succeeded":
+      case "invoice.payment_failed": {
+        const fatura = event.data.object as Stripe.Invoice;
+        const subId = assinaturaDaFatura(fatura);
+        if (!subId) {
+          // Fatura avulsa não tem assinatura; não é erro.
+          console.warn("Webhook: fatura sem assinatura vinculada", fatura.id);
+          break;
+        }
+        const sub = await stripe.subscriptions.retrieve(subId);
+        const userId = await resolverUserId(sub.metadata?.userId, sub.customer);
+        if (userId) {
+          await prisma.subscription.updateMany({
+            where: { userId },
+            data: { status: event.type === "invoice.payment_failed" ? "past_due" : sub.status },
           });
         }
+        break;
       }
-      break;
+    }
+  } catch (err: any) {
+    if (ehErroPermanente(err)) {
+      // Confirmamos o recebimento para o Stripe parar de reenviar: o problema
+      // está no dado, não na entrega. Fica registrado no log para investigação.
+      console.error("Webhook: evento descartado", event.id, event.type, err?.message);
+      return NextResponse.json({ received: true, ignored: true });
+    }
+    // Falha transitória (banco fora do ar, timeout): 500 faz o Stripe reenviar.
+    console.error("Webhook: falha ao processar", event.id, event.type, err?.message);
+    return NextResponse.json({ error: "Falha ao processar evento" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

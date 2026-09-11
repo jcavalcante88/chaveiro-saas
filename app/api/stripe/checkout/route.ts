@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import type Stripe from "stripe";
 
 // Cria uma sessão de assinatura no Stripe.
-// O cartão é coletado AGORA, mas a primeira cobrança só acontece
-// depois de 15 dias (trial_period_days), exatamente como Netflix/Spotify fazem.
-export async function POST() {
+// O trial de 60 dias é controlado pela nossa própria Subscription
+// (ver lib/auth.ts); aqui o cliente assina para continuar após o período.
+export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id || !session.user.email) {
@@ -24,6 +25,19 @@ export async function POST() {
     }
 
     let stripeCustomerId = subscription.stripeCustomerId;
+
+    // O cliente salvo pode nao existir na conta atual: os catalogos de teste e
+    // de producao sao separados, entao um ID criado em teste deixa de valer ao
+    // migrar para live (e o cliente tambem pode ter sido removido no Stripe).
+    if (stripeCustomerId) {
+      try {
+        const existente = await stripe.customers.retrieve(stripeCustomerId);
+        if ((existente as Stripe.DeletedCustomer).deleted) stripeCustomerId = null;
+      } catch {
+        stripeCustomerId = null;
+      }
+    }
+
     if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
         email: session.user.email,
@@ -32,8 +46,24 @@ export async function POST() {
       stripeCustomerId = customer.id;
       await prisma.subscription.update({
         where: { userId },
-        data: { stripeCustomerId },
+        // Zera tambem a assinatura antiga: ela pertencia ao cliente anterior.
+        data: { stripeCustomerId, stripeSubscriptionId: null },
       });
+    }
+
+    // URL base para onde o Stripe devolve o cliente. NEXTAUTH_URL já aponta
+    // para o ambiente correto (localhost em dev, domínio em produção); a origem
+    // da requisição serve de rede de segurança se ela não estiver definida.
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      new URL(req.url).origin;
+
+    if (!/^https?:\/\//.test(baseUrl)) {
+      return NextResponse.json(
+        { error: "URL da aplicação inválida. Configure NEXTAUTH_URL com o endereço completo (https://...)" },
+        { status: 500 }
+      );
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
@@ -47,8 +77,11 @@ export async function POST() {
         },
       ],
       metadata: { userId },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?assinatura=sucesso`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?assinatura=cancelada`,
+      // O Stripe nao copia a metadata acima para a assinatura criada;
+      // sem isto o webhook nao consegue identificar o dono da assinatura.
+      subscription_data: { metadata: { userId } },
+      success_url: `${baseUrl}/dashboard?assinatura=sucesso`,
+      cancel_url: `${baseUrl}/dashboard?assinatura=cancelada`,
     });
 
     return NextResponse.redirect(checkoutSession.url!, 303);
