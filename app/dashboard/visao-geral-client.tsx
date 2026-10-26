@@ -39,14 +39,24 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
               <p className="text-sm text-white/60">Assine para continuar usando após o trial</p>
             </div>
           </div>
-          <form method="POST" action="/api/stripe/checkout">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-semibold"
-            >
-              Assinar agora
-            </button>
-          </form>
+          <div className="flex gap-2">
+            <form method="POST" action="/api/stripe/checkout">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-semibold"
+              >
+                Assinar agora
+              </button>
+            </form>
+            <form method="POST" action="/api/stripe/checkout?metodo=pix">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition text-sm font-semibold"
+              >
+                Pix
+              </button>
+            </form>
+          </div>
         </div>
       )}
 

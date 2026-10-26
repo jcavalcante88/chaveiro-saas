@@ -66,6 +66,34 @@ export async function POST(req: Request) {
       );
     }
 
+    // Pix não renova sozinho: é um pagamento avulso que libera 1 mês, no mesmo
+    // valor do plano mensal. O acesso é registrado em lib/pix.ts.
+    if (new URL(req.url).searchParams.get("metodo") === "pix") {
+      const preco = await stripe.prices.retrieve(process.env.STRIPE_PRICE_ID);
+      const pixSession = await stripe.checkout.sessions.create({
+        mode: "payment",
+        customer: stripeCustomerId,
+        payment_method_types: ["pix"],
+        payment_method_options: { pix: { expires_after_seconds: 3600 } },
+        line_items: [
+          {
+            price_data: {
+              currency: preco.currency,
+              unit_amount: preco.unit_amount!,
+              product_data: { name: "Chaveiro Pro · 1 mês (Pix)" },
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: { userId, tipo: "pix", meses: "1" },
+        payment_intent_data: { metadata: { userId, tipo: "pix", meses: "1" } },
+        locale: "pt-BR",
+        success_url: `${baseUrl}/dashboard?assinatura=sucesso`,
+        cancel_url: `${baseUrl}/dashboard?assinatura=cancelada`,
+      });
+      return NextResponse.redirect(pixSession.url!, 303);
+    }
+
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: stripeCustomerId,

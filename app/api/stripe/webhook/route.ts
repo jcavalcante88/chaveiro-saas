@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { sincronizarPix } from "@/lib/pix";
 import Stripe from "stripe";
 
 // A verificação de assinatura do Stripe depende do corpo cru e do crypto do
@@ -117,6 +118,15 @@ async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: strin
   });
 }
 
+async function registrarPix(sessao: Stripe.Checkout.Session) {
+  const userId = await resolverUserId(sessao.metadata?.userId, sessao.customer);
+  if (!userId) return;
+  // Mesma conta Stripe de outros apps: só registra usuários deste banco.
+  const existe = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!existe) return;
+  await sincronizarPix(userId);
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
@@ -149,6 +159,16 @@ export async function POST(req: Request) {
           const sub = await stripe.subscriptions.retrieve(subId);
           await salvarAssinatura(sub, sessao.metadata?.userId);
         }
+        if (sessao.metadata?.tipo === "pix" && sessao.payment_status === "paid") {
+          await registrarPix(sessao);
+        }
+        break;
+      }
+
+      // Pix costuma ser aprovado depois que a sessão termina.
+      case "checkout.session.async_payment_succeeded": {
+        const sessao = event.data.object as Stripe.Checkout.Session;
+        if (sessao.metadata?.tipo === "pix") await registrarPix(sessao);
         break;
       }
 

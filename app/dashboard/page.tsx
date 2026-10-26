@@ -71,6 +71,7 @@ function AssinaturaWall({ motivo }: { motivo: string }) {
     pagamento_pendente: { titulo: 'Pagamento pendente', desc: 'Regularize seu pagamento para reativar o acesso.' },
     cancelado: { titulo: 'Assinatura cancelada', desc: 'Reative sua assinatura para voltar a usar o sistema.' },
     sem_assinatura: { titulo: 'Sem assinatura', desc: 'Crie uma assinatura para começar a usar o sistema.' },
+    pix_vencido: { titulo: 'Seu mês pago no Pix acabou', desc: 'Pague mais um mês no Pix ou assine no cartão para continuar.' },
   };
   const info = msgs[motivo] ?? { titulo: 'Acesso bloqueado', desc: 'Entre em contato com o suporte.' };
 
@@ -79,14 +80,27 @@ function AssinaturaWall({ motivo }: { motivo: string }) {
       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl">🔒</div>
       <h2 className="text-2xl font-bold text-gray-900">{info.titulo}</h2>
       <p className="text-gray-600 max-w-sm">{info.desc}</p>
-      <form method="POST" action="/api/stripe/checkout">
-        <button
-          type="submit"
-          className="mt-2 inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-lg hover:from-amber-500 hover:to-amber-600 transition"
-        >
-          Assinar agora →
-        </button>
-      </form>
+      <div className="mt-2 flex flex-col sm:flex-row gap-3">
+        <form method="POST" action="/api/stripe/checkout">
+          <button
+            type="submit"
+            className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-lg hover:from-amber-500 hover:to-amber-600 transition"
+          >
+            Assinar no cartão →
+          </button>
+        </form>
+        <form method="POST" action="/api/stripe/checkout?metodo=pix">
+          <button
+            type="submit"
+            className="w-full inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition"
+          >
+            Pagar 1 mês no Pix
+          </button>
+        </form>
+      </div>
+      <p className="text-xs text-gray-500 max-w-sm">
+        O Pix libera 1 mês e não renova sozinho. Se acabou de pagar, espere 1 minuto e atualize a página.
+      </p>
     </div>
   );
 }

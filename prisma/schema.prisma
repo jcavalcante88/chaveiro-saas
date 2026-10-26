@@ -78,7 +78,7 @@ model Subscription {
   stripeSubscriptionId String?   @unique
   stripePriceId        String?
 
-  // trialing | active | past_due | canceled | incomplete
+  // trialing | active | past_due | canceled | incomplete | pix (mês pago no Pix até currentPeriodEnd)
   status               String    @default("trialing")
 
   trialEndsAt          DateTime?
