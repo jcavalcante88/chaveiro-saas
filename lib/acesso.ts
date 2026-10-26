@@ -7,11 +7,19 @@ export type AcessoStatus = {
   diasRestantesTrial: number | null;
 };
 
+// Contas do dono do sistema: nunca são bloqueadas por trial ou pagamento.
+const CONTAS_LIVRES = ["jerrycamargodores@gmail.com"];
+
 // Usado dentro das páginas do dashboard (Server Component) para decidir
 // se o usuário pode usar o sistema ou se deve ser mandado pra tela de cobrança.
 export async function checkAcesso(userId: string): Promise<AcessoStatus> {
   const acesso = await calcularAcesso(userId);
   if (acesso.liberado) return acesso;
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (user?.email && CONTAS_LIVRES.includes(user.email.toLowerCase())) {
+    return { liberado: true, motivo: "active", diasRestantesTrial: null };
+  }
 
   // Bloqueado: confere no Stripe se chegou um Pix que o webhook ainda não
   // registrou (o Pix é aprovado alguns segundos depois do checkout).
